@@ -37,18 +37,16 @@ const OrderManagement = () => {
       price: 89.99,
       totalPrice: 89.99
     }
-    // Add more order objects as needed
   ])
 
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showModal, setShowModal] = useState(false)
 
-  const filteredOrders = orders.filter(
-    order =>
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOrders = orders.filter(order =>
+    [order.id, order.customer, order.email].some(field =>
+      field.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   )
 
   const getStatusColor = status => {
@@ -81,11 +79,9 @@ const OrderManagement = () => {
   }
 
   const updateOrderStatus = (orderId, newStatus) => {
-    setOrders(
-      orders.map(order =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
-    )
+    setOrders(orders.map(order =>
+      order.id === orderId ? { ...order, status: newStatus } : order
+    ))
   }
 
   const viewOrderDetails = order => {
@@ -94,15 +90,17 @@ const OrderManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 px-4 sm:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-800">Order Management</h1>
-        <div className="text-sm text-gray-500">Total Orders: {orders.length}</div>
+        <div className="text-sm text-gray-500 mt-2 sm:mt-0">
+          Total Orders: {orders.length}
+        </div>
       </div>
 
-      <div className="p-6 bg-white border border-gray-200 rounded-lg shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 sm:p-6">
         <div className="relative">
-          <Search className="absolute text-gray-400 transform -translate-y-1/2 left-3 top-1/2" size={20} />
+          <Search className="absolute text-gray-400 left-3 top-1/2 -translate-y-1/2" size={20} />
           <input
             type="text"
             placeholder="Search orders by ID, customer, or email..."
@@ -113,87 +111,91 @@ const OrderManagement = () => {
         </div>
       </div>
 
-      <div className="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b border-gray-200 bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left">Order ID</th>
-                <th className="px-4 py-3 text-left">Customer</th>
-                <th className="px-4 py-3 text-left">Order Date</th>
-                <th className="px-4 py-3 text-left">Customer Advance</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredOrders.map(order => {
-                const StatusIcon = getStatusIcon(order.status)
-                return (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-4 font-medium text-blue-600">{order.id}</td>
-                    <td className="px-4 py-4">{order.customer}</td>
-                    <td className="px-4 py-4 text-gray-600">{order.date}</td>
-                    <td className="px-4 py-4">₹{order.total}</td>
-                    <td className="px-4 py-4">
-                      <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
-                        <StatusIcon size={12} className="mr-1" />
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center space-x-2">
-                        <button onClick={() => viewOrderDetails(order)} className="p-2 text-blue-600 rounded-lg hover:bg-blue-50">
-                          <Eye size={16} />
-                        </button>
-                        <select
-                          value={order.status}
-                          onChange={e => updateOrderStatus(order.id, e.target.value)}
-                          className="px-2 py-1 text-xs border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Processing">Processing</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                        </select>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+      <div className="overflow-x-auto bg-white border border-gray-200 rounded-lg shadow-sm">
+        <table className="min-w-full text-sm text-left">
+          <thead className="bg-gray-50 text-gray-600 font-medium">
+            <tr>
+              <th className="px-4 py-3">Order ID</th>
+              <th className="px-4 py-3">Customer</th>
+              <th className="px-4 py-3">Order Date</th>
+              <th className="px-4 py-3">Customer Advance</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {filteredOrders.map(order => {
+              const StatusIcon = getStatusIcon(order.status)
+              return (
+                <tr key={order.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 font-medium text-blue-600">{order.id}</td>
+                  <td className="px-4 py-3">{order.customer}</td>
+                  <td className="px-4 py-3">{order.date}</td>
+                  <td className="px-4 py-3">₹{order.total}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}>
+                      <StatusIcon size={12} className="mr-1" />
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                      <button onClick={() => viewOrderDetails(order)} className="p-2 text-blue-600 rounded-lg hover:bg-blue-50">
+                        <Eye size={16} />
+                      </button>
+                      <select
+                        value={order.status}
+                        onChange={e => updateOrderStatus(order.id, e.target.value)}
+                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </div>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
 
+      {/* Modal */}
       {showModal && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-800">Order Details</h2>
               <button onClick={() => setShowModal(false)} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
             </div>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium">Order ID</label><p>{selectedOrder.id}</p></div>
-                <div><label className="block text-sm font-medium">Order Date</label><p>{selectedOrder.date}</p></div>
-                <div><label className="block text-sm font-medium">Customer</label><p>{selectedOrder.customer}</p></div>
-                <div><label className="block text-sm font-medium">Email</label><p>{selectedOrder.email}</p></div>
+            <div className="space-y-6 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><label className="font-medium">Order ID</label><p>{selectedOrder.id}</p></div>
+                <div><label className="font-medium">Order Date</label><p>{selectedOrder.date}</p></div>
+                <div><label className="font-medium">Customer</label><p>{selectedOrder.customer}</p></div>
+                <div><label className="font-medium">Email</label><p>{selectedOrder.email}</p></div>
               </div>
-              <div><label className="block text-sm font-medium">Status</label><span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedOrder.status)}`}>{React.createElement(getStatusIcon(selectedOrder.status), { size: 14, className: "mr-1" })}{selectedOrder.status}</span></div>
-              <div><label className="block text-sm font-medium">Order Details</label>
-                
+
+              <div>
+                <label className="font-medium">Status</label>
+                <span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedOrder.status)}`}>
+                  {React.createElement(getStatusIcon(selectedOrder.status), { size: 14, className: "mr-1" })}
+                  {selectedOrder.status}
+                </span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div><label className="block text-sm font-medium">Address</label><p>{selectedOrder.address}</p></div>
-                <div><label className="block text-sm font-medium">Booking Date</label><p>{new Date(selectedOrder.bookingDate).toLocaleDateString()}</p></div>
-                <div><label className="block text-sm font-medium">Delivery Date</label><p>{new Date(selectedOrder.deliveryDate).toLocaleDateString()}</p></div>
-                <div><label className="block text-sm font-medium">Payment Status</label><p>{selectedOrder.paymentStatus}</p></div>
-                <div><label className="block text-sm font-medium">Product</label><p>{selectedOrder.productName}</p></div>
-                <div><label className="block text-sm font-medium">Quantity</label><p>{selectedOrder.quantity}</p></div>
-                <div><label className="block text-sm font-medium">Price</label><p>₹{selectedOrder.price?.toFixed(2)}</p></div>
-                <div><label className="block text-sm font-medium">Total Price</label><p>₹{selectedOrder.totalPrice?.toFixed(2)}</p></div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div><label className="font-medium">Address</label><p>{selectedOrder.address}</p></div>
+                <div><label className="font-medium">Booking Date</label><p>{new Date(selectedOrder.bookingDate).toLocaleDateString()}</p></div>
+                <div><label className="font-medium">Delivery Date</label><p>{new Date(selectedOrder.deliveryDate).toLocaleDateString()}</p></div>
+                <div><label className="font-medium">Payment Status</label><p>{selectedOrder.paymentStatus}</p></div>
+                <div><label className="font-medium">Product</label><p>{selectedOrder.productName}</p></div>
+                <div><label className="font-medium">Quantity</label><p>{selectedOrder.quantity}</p></div>
+                <div><label className="font-medium">Price</label><p>₹{selectedOrder.price?.toFixed(2)}</p></div>
+                <div><label className="font-medium">Total</label><p>₹{selectedOrder.totalPrice?.toFixed(2)}</p></div>
               </div>
             </div>
 
